@@ -53,13 +53,13 @@ jobs:
           tags: ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}
           outputs: type=docker,push-by-digest=true,name-canonical=true,push=true
 
-      #- name: Run tests
-      #  if: github.event_name == 'pull_request'
-      #  shell: bash
-      #  run: |
-      #    docker run -t ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}:latest bash -c " \
-      #      pip install pytest nbmake; \
-      #      find . -name '*.ipynb' | pytest --nbmake --nbmake-timeout=3600; "
+      - name: Run tests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          docker run -t ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}:latest bash -c " \
+            pip install pytest nbmake; \
+            find . -name '*.ipynb' | pytest --nbmake --nbmake-timeout=3600; "
 
       - name: Authenticate with GHCR
         if: github.event_name != 'pull_request'
@@ -81,13 +81,13 @@ jobs:
           tags: ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
 
-      #- name: Run tests
-      #  if: github.event_name != 'pull_request'
-      #  shell: bash
-      #  run: |
-      #    docker run -t ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}@${{ steps.build.outputs.digest }} bash -c " \
-      #      pip install pytest nbmake; \
-      #      find . -name '*.ipynb' | pytest --nbmake --nbmake-timeout=3600; "
+      - name: Run tests
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          docker run -t ghcr.io/${{ vars.ORG_REPO }}/${{ github.event.repository.name }}@${{ steps.build.outputs.digest }} bash -c " \
+            pip install pytest nbmake; \
+            find . -name '*.ipynb' | pytest --nbmake --nbmake-timeout=3600; "
 
       - name: Export digest
         if: github.event_name != 'pull_request'
