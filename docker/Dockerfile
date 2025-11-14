@@ -7,7 +7,7 @@ LABEL maintainer="James Gebbie-Rayet <james.gebbie@stfc.ac.uk>"
 ARG AMBERTOOLS_DL=null
 
 # Install workshop deps
-RUN mamba install -c conda-forge openmm matplotlib scipy
+RUN mamba install -c conda-forge openmm matplotlib scipy cython
 RUN pip install git+https://github.com/CompBioAsia/CBAtools.git
 
 USER root
@@ -25,10 +25,12 @@ RUN tar xvjf AmberTools22.tar.bz2 && \
 
 WORKDIR /tmp/amber22_src
 RUN ./update_amber --update
+WORKDIR /tmp/amber22_src/AmberTools/src/pytraj
+RUN python setup.py --cythonize
 RUN mkdir /tmp/build
 WORKDIR /tmp/build
 
-RUN cmake /tmp/amber22_src -DCMAKE_INSTALL_PREFIX=/opt/amber22 -DBUILD_PYTHON=TRUE -DDISABLE_TOOLS="pytraj" -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DDOWNLOAD_MINICONDA=FALSE -DCOMPILER=MANUAL -DBUILD_GUI=FALSE -DCOMPILER=GNU -DOPENMP=TRUE -DCUDA=FALSE -DMPI=FALSE -DUSE_FFT=True -DBUILD_DEPRECATED=False -DBUILD_INDEV=False -DBUILD_PERL=True -DOPTIMIZE=True
+RUN cmake /tmp/amber22_src -DCMAKE_INSTALL_PREFIX=/opt/amber22 -DBUILD_PYTHON=TRUE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DDOWNLOAD_MINICONDA=FALSE -DCOMPILER=MANUAL -DBUILD_GUI=FALSE -DCOMPILER=GNU -DOPENMP=TRUE -DCUDA=FALSE -DMPI=FALSE -DUSE_FFT=True -DBUILD_DEPRECATED=False -DBUILD_INDEV=False -DBUILD_PERL=True -DOPTIMIZE=True
 RUN make -j8
 RUN make install
 
