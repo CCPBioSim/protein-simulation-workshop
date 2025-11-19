@@ -56,6 +56,7 @@ jobs:
         with:
           build-args: |
             AMBERTOOLS_DL=${{ secrets.AMBERTOOLS_DL }}
+            AMBER_DL=${{ secrets.AMBERTOOLS_DL }}
           file: ./docker/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -86,6 +87,7 @@ jobs:
         with:
           build-args: |
             AMBERTOOLS_DL=${{ secrets.AMBERTOOLS_DL }}
+            AMBER_DL=${{ secrets.AMBERTOOLS_DL }}
           file: ./docker/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}

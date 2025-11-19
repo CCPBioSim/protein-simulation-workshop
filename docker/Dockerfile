@@ -5,49 +5,53 @@ FROM ghcr.io/ccpbiosim/jupyterhub-base:$BASE_IMAGE
 LABEL maintainer="James Gebbie-Rayet <james.gebbie@stfc.ac.uk>"
 
 ARG AMBERTOOLS_DL=null
-
-# Install workshop deps
-RUN mamba install -c conda-forge openmm matplotlib scipy cython
-RUN pip install git+https://github.com/CompBioAsia/CBAtools.git
-
-USER root
-RUN mkdir /opt/amber22 && \
-    chown 1000:100 -R /opt/amber22 
-
-WORKDIR /tmp
-
-RUN wget $AMBERTOOLS_DL/Amber22.tar.bz2 && \
-    wget $AMBERTOOLS_DL/AmberTools22.tar.bz2
-
-RUN tar xvjf AmberTools22.tar.bz2 && \
-    tar xvjf Amber22.tar.bz2 && \
-    rm AmberTools22.tar.bz2 Amber22.tar.bz2
-
-WORKDIR /tmp/amber22_src
-RUN ./update_amber --update
-WORKDIR /tmp/amber22_src/AmberTools/src/pytraj
-RUN python setup.py --cythonize
-RUN mkdir /tmp/build
-WORKDIR /tmp/build
-
-RUN cmake /tmp/amber22_src -DCMAKE_INSTALL_PREFIX=/opt/amber22 -DBUILD_PYTHON=TRUE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DDOWNLOAD_MINICONDA=FALSE -DCOMPILER=MANUAL -DBUILD_GUI=FALSE -DCOMPILER=GNU -DOPENMP=TRUE -DCUDA=FALSE -DMPI=FALSE -DUSE_FFT=True -DBUILD_DEPRECATED=False -DBUILD_INDEV=False -DBUILD_PERL=True -DOPTIMIZE=True
-RUN make -j8
-RUN make install
-RUN chown -R 1000:100 /opt/amber22
-
-# Cleanup.
-RUN rm -r /tmp/amber22_src /tmp/build
+ARG AMBERTOOLS_VER=25
+ARG AMBER_DL=null
+ARG AMBER_VER=24
 
 # Switch to jovyan user.
 USER $NB_USER
 WORKDIR $HOME
 
+# Install workshop deps
+RUN mamba install -c conda-forge openmm matplotlib scipy cython
+RUN pip install git+https://github.com/CompBioAsia/CBAtools.git
+WORKDIR /tmp
+
+RUN wget --no-verbose $AMBERTOOLS_DL/ambertools$AMBERTOOLS_VER.tar.bz2 && \
+    tar xjf ambertools$AMBERTOOLS_VER.tar.bz2 && \
+    rm ambertools$AMBERTOOLS_VER.tar.bz2 && \
+    mv ambertools${AMBERTOOLS_VER}_src ambertools_src
+
+RUN wget --no-verbose $AMBER_DL/pmemd$AMBER_VER.tar.bz2 && \
+    tar xjf pmemd$AMBER_VER.tar.bz2 && \
+    rm pmemd$AMBER_VER.tar.bz2 && \
+    mv pmemd${AMBER_VER}_src pmemd_src
+
+WORKDIR /tmp/ambertools_src
+RUN ./update_amber --update
+WORKDIR /tmp/pmemd_src
+RUN ./update_pmemd --update
+
+RUN mkdir /tmp/build_ambertools && \
+    mkdir /tmp/build_pmemd
+WORKDIR /tmp/build_ambertools
+
+RUN cmake /tmp/ambertools_src -DCMAKE_INSTALL_PREFIX=/opt/conda -DPYTHON_EXECUTABLE=/opt/conda/bin/python -DUSE_CONDA_LIBS=TRUE -DBUILD_PYTHON=TRUE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DDOWNLOAD_MINICONDA=FALSE -DCOMPILER=MANUAL -DBUILD_GUI=FALSE -DCOMPILER=GNU -DOPENMP=TRUE -DCUDA=FALSE -DMPI=FALSE -DUSE_FFT=True -DBUILD_DEPRECATED=FALSE -DBUILD_INDEV=FALSE -DBUILD_PERL=FALSE -DOPTIMIZE=TRUE
+RUN make -j8
+RUN make install
+
+WORKDIR /tmp/build_pmemd
+
+RUN cmake /tmp/pmemd_src -DCMAKE_INSTALL_PREFIX=/opt/conda -DPYTHON_EXECUTABLE=/opt/conda/bin/python -DBUILD_PYTHON=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DDOWNLOAD_MINICONDA=FALSE -DCOMPILER=MANUAL -DBUILD_GUI=FALSE -DCOMPILER=GNU -DOPENMP=TRUE -DCUDA=FALSE -DMPI=FALSE -DPMEMD_ONLY=TRUE -DBUILD_DEPRECATED=FALSE -DBUILD_INDEV=FALSE -DBUILD_PERL=FALSE -DOPTIMIZE=TRUE
+RUN make -j8
+RUN make install
+
+# Cleanup.
+RUN rm -r /tmp/ambertools_src /tmp/pmemd_src /tmp/build_ambertools /tmp/build_pmemd
+
 # Add the exec to the path.
-ENV AMBERHOME=/opt/amber22
-ENV PATH="$PATH:/opt/amber22/bin"
-ENV LD_LIBRARY_PATH="$AMBERHOME/lib:$LD_LIBRARY_PATH"
-ENV PERL5LIB="$AMBERHOME/lib/perl:$PERL5LIB"
-ENV PYTHONPATH="$AMBERHOME/lib/python3.12/site-packages:$PYTHONPATH"
+ENV AMBERHOME=/opt/conda
 
 # Get workshop files and move them to jovyan directory.
 COPY --chown=1000:100 . .
