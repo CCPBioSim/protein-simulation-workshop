@@ -10,8 +10,8 @@ Basic MD run:
  - run at constant pressure
 
 &cntrl
-  imin = 0, nstlim = 10000, dt=0.002,
-  ntwx = 1000, ntpr = 50, ntwr = 500,
+  imin = 0, nstlim = 1000, dt=0.002,
+  ntwx = 500, ntpr = 50, ntwr = 500,
   iwrap = 1, 
   ntc = 2, ntf = 2, ntb = 2,
   ntt = 3, gamma_ln = 5, temp0 = 310.0
