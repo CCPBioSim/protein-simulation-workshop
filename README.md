@@ -35,6 +35,7 @@ forward this port when deploying locally::
 Workshop Content Authors:
 
 - Charlie Laughton
+- Jas Kalayan
 
 ## Contact
 
