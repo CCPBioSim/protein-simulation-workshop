@@ -1,5 +1,5 @@
 # Start with BioSim base image.
-ARG BASE_IMAGE=latest
+ARG BASE_IMAGE=latest@sha256:9396d59c0b195cb365875343f26a67ef27a6a6260d32be3fcb29323f8bb0ca05
 FROM ghcr.io/ccpbiosim/jupyterhub-base:$BASE_IMAGE
 
 LABEL maintainer="James Gebbie-Rayet <james.gebbie@stfc.ac.uk>"
