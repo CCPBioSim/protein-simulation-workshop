@@ -19,7 +19,7 @@ ENV FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -w"
 
 # Install workshop deps 
 RUN conda install -y -c conda-forge -c bioconda \
-    #bioconda::bio=1.8.4 \
+    #bioconda::bio=1.8.5 \
     conda-forge::ipywidgets=8.1.9 \
     #conda-forge::freesasa=2.2.1 \
     #conda-forge::gemmi=0.7.5 \
